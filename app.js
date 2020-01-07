@@ -8,18 +8,25 @@ var mongoose = require('mongoose');
 var cors = require('cors');
 
 
+var port = 8000;
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
-mongoose.connect(process.env.DATABASE_URL,{useNewUrlParser:true});
-app.use(cors());
+mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
 
+
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.listen(port, () => {
+    console.log(`app is listening on port ${port}`)
+})
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
