@@ -4,13 +4,13 @@ var nodemailer = require("nodemailer");
 const morgan = require("morgan");
 var cloudinary = require("cloudinary").v2;
 
-// var transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: `${process.env.EMAIL}`,
-//     password: `${process.env.PASSWORD}`
-//   }
-// });
+var transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: `${process.env.EMAIL}`,
+    password: `${process.env.PASSWORD}`
+  }
+});
 
 // New Application Entry
 const newApp = async (req, res, next) => {
@@ -25,10 +25,10 @@ const newApp = async (req, res, next) => {
       courseOfStudy,
       cgpa
     } = req.body;
-    const upload = req.files.upload;
+    const file = req.files.file;
 
     // const filetypes = /pdf|doc|docx/;
-    // const extname = filetypes.test(path.extname(upload.originalname).toLowerCase());
+    // const extname = filetypes.test(upload.extname(upload.originalname).toLowerCase());
     // const mimetype = filetypes.test(upload.mimetype);
     // if (extname && mimetype) {
     //   return cb(null, true);
@@ -36,7 +36,7 @@ const newApp = async (req, res, next) => {
     //   cb('Error: Put in the required format')
     // }
 
-    upload.mv("public/cv/" + upload.name, function (err) {
+    file.mv("public/cv/" + file.name, function (err) {
       if (err) {
         console.log("Couldn't upload");
         console.log(err);
@@ -63,7 +63,7 @@ const newApp = async (req, res, next) => {
         school,
         courseOfStudy,
         cgpa,
-        upload
+        file
       });
 
       await newEntry.save();
@@ -82,15 +82,16 @@ const newApp = async (req, res, next) => {
         html: content
       };
 
-      // transporter.sendMail(message, function (error, info) {
-      //   if (error) {
-      //     console.log(error);
-      //   } else {
-      //     console.log("Email sent: " + info.response);
-      //   }
-      // });
+      transporter.sendMail(message, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
       return res.status(201).json({
-        message: "Thank you for submitting your application, we will get back to you"
+        message: "Thank you for submitting your application, we will get back to you",
+        newEntry
       });
     }
   } catch (err) {

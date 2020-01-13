@@ -6,7 +6,7 @@ const assCreate = require("../controllers/admin/assessment")
 const authorization = require("../middleware/token");
 
 router.post("/signup", adminCon.adminReg);
-router.post("/login", adminCon.adminReg);
+router.post("/login", adminCon.adminLogin);
 
 router.post("/new", appCreate.ApplicantEntry);
 router.get("/all", appCreate.ApplicantDisplay);

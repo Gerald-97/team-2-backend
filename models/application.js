@@ -34,7 +34,7 @@ const applicationSchema = new Schema({
         type: Number,
         require: true
     },
-    upload: {}, //This is where I intend setting the upload
+    file: {}, //This is where I intend setting the upload
     createdAt: {
         type: Date,
         default: Date.now
