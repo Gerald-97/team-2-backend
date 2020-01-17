@@ -15,46 +15,16 @@ var transporter = nodemailer.createTransport({
 // New Application Entry
 const newApp = async (req, res, next) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      birthday,
-      address,
-      school,
-      courseOfStudy,
-      cgpa
-    } = req.body;
-    const file = req.files.file;
-
-    // const filetypes = /pdf|doc|docx/;
-    // const extname = filetypes.test(upload.extname(upload.originalname).toLowerCase());
-    // const mimetype = filetypes.test(upload.mimetype);
-    // if (extname && mimetype) {
-    //   return cb(null, true);
-    // } else {
-    //   cb('Error: Put in the required format')
-    // }
-
-    file.mv("public/cv/" + file.name, function (err) {
-      if (err) {
-        console.log("Couldn't upload");
-        console.log(err);
-      } else {
-        console.log("Saved!");
-      }
+    var deadlineApp = await Application.find({
+      isActive: true
     });
-
-    const data = await User.findOne({
-      email
-    });
-
-    if (data) {
-      return res.status(409).json({
-        message: `Application for ${email} has been received already`
-      });
+    if (deadlineApp.date < Date.now()) {
+      res.status(401).json({
+        message: "Applications are closed for this cycle"
+      })
     } else {
-      const newEntry = await new Application({
+
+      const {
         firstName,
         lastName,
         email,
@@ -62,12 +32,51 @@ const newApp = async (req, res, next) => {
         address,
         school,
         courseOfStudy,
-        cgpa,
-        file
+        cgpa
+      } = req.body;
+      const file = req.files.file;
+
+      // const filetypes = /pdf|doc|docx/;
+      // const extname = filetypes.test(upload.extname(upload.originalname).toLowerCase());
+      // const mimetype = filetypes.test(upload.mimetype);
+      // if (extname && mimetype) {
+      //   return cb(null, true);
+      // } else {
+      //   cb('Error: Put in the required format')
+      // }
+
+      file.mv("public/cv/" + file.name, function (err) {
+        if (err) {
+          console.log("Couldn't upload");
+          console.log(err);
+        } else {
+          console.log("Saved!");
+        }
       });
 
-      await newEntry.save();
-      const content = `
+      const data = await Application.findOne({
+        email
+      });
+
+      if (data) {
+        return res.status(409).json({
+          message: `Application for ${email} has been received already`
+        });
+      } else {
+        const newEntry = await new Application({
+          firstName,
+          lastName,
+          email,
+          birthday,
+          address,
+          school,
+          courseOfStudy,
+          cgpa,
+          file
+        });
+
+        await newEntry.save();
+        const content = `
         <p>Dear ${firstName},</p>
         <p>Thank you for your interest in a career opportunity at Enyata.</p>
         <p> We have received and we are currently reviewing your application.</p>
@@ -75,24 +84,25 @@ const newApp = async (req, res, next) => {
         <br>
         <p>Enyata Recruitment Team</p>`;
 
-      var message = {
-        from: '"Enyata Software Engineering" <anitaogechi9@gmail.com>',
-        to: `${email}`,
-        subject: "Your application: Software Developer Academy",
-        html: content
-      };
+        var message = {
+          from: '"Enyata Software Engineering" <anitaogechi9@gmail.com>',
+          to: `${email}`,
+          subject: "Your application: Software Developer Academy",
+          html: content
+        };
 
-      transporter.sendMail(message, function (error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log("Email sent: " + info.response);
-        }
-      });
-      return res.status(201).json({
-        message: "Thank you for submitting your application, we will get back to you",
-        newEntry
-      });
+        transporter.sendMail(message, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
+        return res.status(201).json({
+          message: "Thank you for submitting your application, we will get back to you",
+          newEntry
+        });
+      }
     }
   } catch (err) {
     return next(err);

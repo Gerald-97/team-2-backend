@@ -2,25 +2,29 @@ const Assessment = require("../../models/assessment");
 const dotenv = require("dotenv").config();
 
 const AssessmentEntry = async (req, res, next) => {
-    const {
-        question,
-        optionA,
-        optionB,
-        optionC,
-        optionD
-    } = req.body;
-    const fileName = req.files.fileName;
-
-    fileName.mv("public/questions/" + fileName.name, function (err) {
-        if (err) {
-            console.log("Couldn't upload");
-            console.log(err);
-        } else {
-            console.log("Saved!");
-        }
-    });
-    console.log(fileName);
     try {
+        const {
+            question,
+            optionA,
+            optionB,
+            optionC,
+            optionD
+        } = req.body;
+        const fileName = req.files.fileName;
+        if (!req.user) {
+            return res.status(401).json({
+                message: "You are not an Admin"
+            })
+        } else {
+            fileName.mv("public/questions/" + fileName.name, function (err) {
+                if (err) {
+                    console.log("Couldn't upload");
+                    console.log(err);
+                } else {
+                    console.log("Saved!");
+                }
+            });
+        }
         const newEntry = new Assessment({
             fileName,
             question,
@@ -39,16 +43,16 @@ const AssessmentEntry = async (req, res, next) => {
 };
 
 const AssessmentUpdate = async (req, res) => {
-    const {
-        question,
-        optionA,
-        optionB,
-        optionC,
-        optionD
-    } = req.body;
-    const fileName = req.file.fileName;
     try {
-        if (req.user !== true) {
+        const {
+            question,
+            optionA,
+            optionB,
+            optionC,
+            optionD
+        } = req.body;
+        const fileName = req.file.fileName;
+        if (!req.user) {
             return res.status(401).json({
                 message: "You are not an admin"
             });

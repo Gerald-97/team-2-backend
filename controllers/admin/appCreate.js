@@ -11,30 +11,65 @@ const ApplicantEntry = async (req, res, next) => {
         } = req.body;
         const fileapplicant = req.files.fileapplicant;
 
-        fileapplicant.mv("public/application/" + fileapplicant.name, function (err) {
-            if (err) {
-                console.log("Couldn't upload");
-                console.log(err);
+        // To find other active applications before creating a new one.
+
+        // const adminAppl = Applicant.findOneAndUpdate({
+        //     isActive: true
+        // }, {
+        //     isActive: false
+        // })
+
+        // for (let oldAppl of oldAppls) {
+        //     oldAppl.isActive = false
+        //     return oldAppls
+        // }
+
+        if (!req.user) {
+            return res.status(401).json({
+                message: "You are not an Admin"
+            });
+        } else {
+            if (date < Date.now()) {
+                res.status(401).json({
+                    message: "The date is passed"
+                })
             } else {
-                console.log("Saved!");
+                fileapplicant.mv("public/application/" + fileapplicant.name, function (err) {
+                    if (err) {
+                        return next(err)
+                    } else {
+                        next();
+                    }
+                });
+                const newEntry = await new Applicant({
+                    batch,
+                    link,
+                    date,
+                    instructions,
+                    fileapplicant
+                });
+                await newEntry.save();
+                return res.status(201).json({
+                    message: "Application Created",
+                    newEntry
+                });
             }
-        });
-        const newEntry = await new Applicant({
-            fileapplicant,
-            batch,
-            link,
-            date,
-            instructions,
-            fileapplicant
-        });
-        await newEntry.save();
-        return res.status(201).json({
-            message: "Application Created"
-        });
+        }
     } catch (err) {
         return next(err);
     }
 };
+
+// Function to hopefully track the deadlines
+// (async function () {
+//     var adminAppl = await Applicant.find({})
+//     for (let adminApp in adminAppl) {
+//         while (adminApp.date > Date.now()) {
+//             adminApp.isActive = false
+//             return adminApp
+//         }
+//     }
+// })();
 
 const ApplicantUpdate = async (req, res) => {
     try {
@@ -44,9 +79,9 @@ const ApplicantUpdate = async (req, res) => {
             date,
             Instructions
         } = req.body;
-        if (req.user !== true) {
+        if (!req.user) {
             return res.status(401).json({
-                message: "You are not an admin"
+                message: "You are not an Admin"
             });
         } else {
             id = req.params.id;
@@ -78,7 +113,7 @@ const ApplicantDelete = async (req, res, next) => {
     try {
         if (!req.user) {
             return res.status(401).json({
-                message: "You need to be an admin"
+                message: "You need to be an Admin"
             });
         } else {
             const id = req.params.id;

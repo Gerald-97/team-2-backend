@@ -64,7 +64,8 @@ const adminLogin = async (req, res, next) => {
                 });
                 return res.status(200).json({
                     message: "Logged in successfully",
-                    token
+                    token,
+                    data
                 });
             }
         }

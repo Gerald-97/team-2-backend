@@ -2,6 +2,26 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 var dotenv = require('dotenv').config();
 
+module.exports = async (req, res, next) => {
+    try {
+        const authorization = await req.headers.authorization;
+        if (!authorization) {
+            res.status(401).json({
+                message: "You do not possess an authorization"
+            })
+        } else {
+            const token = await authorization.slice(7);
+            const data = await jwt.verify(token, process.env.SECRET);
+            await User.find(data);
+            req.user = data.isAdmin;
+            next();
+        }
+    } catch (err) {
+        return next(err)
+    }
+}
+
+/*
 module.exports = (req, res, next) => {
     const authorization = req.headers.authorization;
     if (!authorization) {
@@ -25,3 +45,4 @@ module.exports = (req, res, next) => {
         })
     }
 }
+*/

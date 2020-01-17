@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../models/user');
+const Application = require("../../models/application");
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config();
 
@@ -42,11 +43,15 @@ const signup = async (req, res, next) => {
 
 /* A  REGISTERED USER CAN LOGIN AND GET AN AUTHORIZATION TOKEN */
 const login = async (req, res, next) => {
-    const {
-        email,
-        password
-    } = req.body;
     try {
+        const {
+            email,
+            password
+        } = req.body;
+        const checkEntry = await Application.findOne({
+            email
+        })
+
         const data = await User.findOne({
             email
         });
@@ -61,6 +66,12 @@ const login = async (req, res, next) => {
                     message: 'Invalid login details'
                 })
             } else {
+                const checkEntry = await Application.findOne({
+                    email
+                })
+                if (checkEntry) {
+                    data.sentEntry = true
+                }
                 const token = await jwt.sign({
                     isAdmin: data.isAdmin
                 }, process.env.SECRET, {
@@ -69,7 +80,8 @@ const login = async (req, res, next) => {
                 return res.status(200).json({
                     message: 'Login successful',
                     token,
-                    data
+                    data,
+                    checkEntry
                 })
             }
         }
