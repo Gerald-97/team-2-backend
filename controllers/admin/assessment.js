@@ -5,38 +5,36 @@ const AssessmentEntry = async (req, res, next) => {
     try {
         const {
             question,
-            optionA,
-            optionB,
-            optionC,
-            optionD
+            answer,
+            options
         } = req.body;
-        const fileName = req.files.fileName;
+        const file = req.files.file;
         if (!req.user) {
             return res.status(401).json({
                 message: "You are not an Admin"
             })
         } else {
-            fileName.mv("public/questions/" + fileName.name, function (err) {
-                if (err) {
-                    console.log("Couldn't upload");
-                    console.log(err);
-                } else {
-                    console.log("Saved!");
-                }
+            await file.mv("public/questions/" + file.name);
+            const data = await Assessment.findOne({
+                question
             });
+            if (data) {
+                return res.status(401).json({
+                    message: 'Question already in the database'
+                })
+            } else {
+                const newEntry = new Assessment({
+                    file,
+                    question,
+                    answer,
+                    options
+                });
+                await newEntry.save();
+                return res.status(201).json({
+                    message: "Assessment Created"
+                });
+            }
         }
-        const newEntry = new Assessment({
-            fileName,
-            question,
-            optionA,
-            optionB,
-            optionC,
-            optionD
-        });
-        await newEntry.save();
-        return res.status(201).json({
-            message: "Assessment Created"
-        });
     } catch (err) {
         return next(err);
     }
@@ -46,24 +44,20 @@ const AssessmentUpdate = async (req, res) => {
     try {
         const {
             question,
-            optionA,
-            optionB,
-            optionC,
-            optionD
+            answer,
+            options
         } = req.body;
-        const fileName = req.file.fileName;
+        const file = req.file.file;
         if (!req.user) {
             return res.status(401).json({
                 message: "You are not an admin"
             });
         } else {
             const data = await Assessment.findByIdAndUpdate(req.params.id, {
-                fileName,
+                file,
                 question,
-                optionA,
-                optionB,
-                optionC,
-                optionD
+                answer,
+                options
             });
             if (!data) {
                 return res.status(401).json({
@@ -75,39 +69,41 @@ const AssessmentUpdate = async (req, res) => {
                 });
             }
         }
-    } catch {
+    } catch (err) {
         return next(err);
     }
 };
 
-// const AssessmentDelete = async (req, res, next) => {
-//   try{
-//   if (!req.user) {
-//     return res.status(401).json({
-//       message: "You need to be an admin"
-//     });
-//   } else {
-//     const id = req.params.id;
-//     const data = await Assessment.findByIdAndDelete({ _id: id });
-//       if (err) next(err);
-//       if (!data) {
-//      return res.status(401).json({
-//    message: "No Assessment for this id"});
-//       } else {
-//         res.status(201).json({
-//           message: "Assessment deleted successfully"
-//         });
-//       }
+const AssessmentDelete = async (req, res, next) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({
+                message: "You need to be an admin"
+            });
+        } else {
+            const id = req.params.id;
+            const data = await Assessment.findByIdAndDelete({
+                _id: id
+            });
+            if (!data) {
+                return res.status(401).json({
+                    message: "No Assessment for this id"
+                });
+            } else {
+                res.status(201).json({
+                    message: "Assessment deleted successfully"
+                });
+            }
 
-//   }
-// }catch {
-//   return next(err)
-// }
-// }
+        }
+    } catch (err) {
+        return next(err)
+    }
+}
 
 const AssessmentDisplay = async (req, res, next) => {
     try {
-        const data = await Assessment.find({});
+        const data = await Assessment.find();
         return res.status(200).json({
             message: "Questions",
             data
@@ -136,5 +132,6 @@ module.exports = {
     AssessmentEntry,
     AssessmentUpdate,
     AssessmentDisplay,
-    AssessmentDisplayOne
+    AssessmentDisplayOne,
+    AssessmentDelete
 };

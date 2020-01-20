@@ -1,4 +1,5 @@
 const Application = require("../../models/application");
+const Applicant = require("../../models/appCreate");
 const User = require("../../models/user");
 var nodemailer = require("nodemailer");
 const morgan = require("morgan");
@@ -63,7 +64,14 @@ const newApp = async (req, res, next) => {
           message: `Application for ${email} has been received already`
         });
       } else {
+
+        const batchID = await Applicant.findOne({
+          isActive: true
+        })
+        var batchNumber = batchID.batch
+
         const newEntry = await new Application({
+          batchNumber,
           firstName,
           lastName,
           email,

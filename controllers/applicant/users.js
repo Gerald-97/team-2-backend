@@ -71,6 +71,8 @@ const login = async (req, res, next) => {
                 })
                 if (checkEntry) {
                     data.sentEntry = true
+                } else {
+                    data.sentEntry = false
                 }
                 const token = await jwt.sign({
                     isAdmin: data.isAdmin

@@ -8,15 +8,16 @@ const auth = require("../middleware/token");
 router.post("/signup", adminCon.adminReg);
 router.post("/login", adminCon.adminLogin);
 
+router.get("/all-test", assCreate.AssessmentDisplay);
+router.post("/test", auth, assCreate.AssessmentEntry);
+router.put("/test/:id", assCreate.AssessmentUpdate);
+router.get("/one-test/:id", assCreate.AssessmentDisplayOne);
+
 router.post("/new", appCreate.ApplicantEntry);
-router.get("/all", appCreate.ApplicantDisplay);
+router.get("/all", auth, appCreate.ApplicantDisplay);
 router.get("/:id", appCreate.ApplicantDisplayOne);
 router.put("/edit/:id", auth, appCreate.ApplicantUpdate);
 router.delete("/del/:id", auth, appCreate.ApplicantDelete);
 
-router.post("/test", assCreate.AssessmentEntry);
-router.put("/test/:id", assCreate.AssessmentUpdate);
-router.get("/all-test", assCreate.AssessmentDisplay);
-router.get("/one-test", assCreate.AssessmentDisplayOne);
 
 module.exports = router;
