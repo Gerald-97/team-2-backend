@@ -14,7 +14,6 @@ const AssessmentEntry = async (req, res, next) => {
                 message: "You are not an Admin"
             })
         } else {
-            await file.mv("public/questions/" + file.name);
             const data = await Assessment.findOne({
                 question
             });
@@ -23,16 +22,22 @@ const AssessmentEntry = async (req, res, next) => {
                     message: 'Question already in the database'
                 })
             } else {
-                const newEntry = new Assessment({
-                    file,
-                    question,
-                    answer,
-                    options
-                });
-                await newEntry.save();
-                return res.status(201).json({
-                    message: "Assessment Created"
-                });
+                if (!options.includes(answer)) {
+                    return res.status(401).json({
+                        message: "The answer is not in the options"
+                    })
+                } else {
+                    await file.mv("public/questions/" + file.name);
+                    const newEntry = new Assessment({
+                        question,
+                        answer,
+                        options
+                    });
+                    await newEntry.save();
+                    return res.status(201).json({
+                        message: "Assessment Created"
+                    });
+                }
             }
         }
     } catch (err) {
@@ -65,7 +70,7 @@ const AssessmentUpdate = async (req, res) => {
                 });
             } else {
                 return res.status(201).json({
-                    message: "Applcation Updated"
+                    message: "Assessment Updated"
                 });
             }
         }
