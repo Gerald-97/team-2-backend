@@ -7,7 +7,7 @@ const auth = require("../middleware/token");
 
 router.get("/all-test", auth, assCreate.AssessmentDisplay);
 router.post("/test", auth, assCreate.AssessmentEntry);
-router.put("/test/:id", assCreate.AssessmentUpdate);
 router.get("/one-test/:id", assCreate.AssessmentDisplayOne);
+router.put("/test/:id", assCreate.AssessmentUpdate);
 
 module.exports = router;
