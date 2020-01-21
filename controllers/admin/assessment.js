@@ -1,5 +1,21 @@
 const Assessment = require("../../models/assessment");
+const Answers = require('../../models/submitAns')
 const dotenv = require("dotenv").config();
+
+function shuffle(array) {
+    var m = array.length,
+        t,
+        i;
+
+    while (m) {
+        i = Math.floor(Math.random() * m--);
+
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+    return array;
+}
 
 const AssessmentEntry = async (req, res, next) => {
     try {
@@ -9,6 +25,7 @@ const AssessmentEntry = async (req, res, next) => {
             options
         } = req.body;
         const file = req.files.file;
+        const ansQ = options[answer]
         if (!req.user) {
             return res.status(401).json({
                 message: "You are not an Admin"
@@ -22,22 +39,18 @@ const AssessmentEntry = async (req, res, next) => {
                     message: 'Question already in the database'
                 })
             } else {
-                if (!options.includes(answer)) {
-                    return res.status(401).json({
-                        message: "The answer is not in the options"
-                    })
-                } else {
-                    await file.mv("public/questions/" + file.name);
-                    const newEntry = new Assessment({
-                        question,
-                        answer,
-                        options
-                    });
-                    await newEntry.save();
-                    return res.status(201).json({
-                        message: "Assessment Created"
-                    });
-                }
+                await file.mv("public/questions/" + file.name);
+                const newEntry = new Assessment({
+                    question,
+                    answer,
+                    options,
+                    ansQ
+                });
+                await newEntry.save();
+                return res.status(201).json({
+                    message: "Assessment Created",
+                    newEntry
+                });
             }
         }
     } catch (err) {
@@ -108,11 +121,23 @@ const AssessmentDelete = async (req, res, next) => {
 
 const AssessmentDisplay = async (req, res, next) => {
     try {
-        const data = await Assessment.find();
-        return res.status(200).json({
-            message: "Questions",
-            data
-        });
+        const userEmail = req.user;
+        const ansSubmitted = await Answers.findOne({
+            userEmail: userEmail
+        })
+        if (ansSubmitted) {
+            res.status(401).json({
+                message: "You have already submitted"
+            })
+        } else {
+            const data = await Assessment.find();
+            const questionData = await shuffle(data).slice(0, 30)
+
+            return res.status(200).json({
+                message: "Questions",
+                questionData
+            });
+        }
     } catch (err) {
         return next(err);
     }

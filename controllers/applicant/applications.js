@@ -46,15 +46,7 @@ const newApp = async (req, res, next) => {
       //   cb('Error: Put in the required format')
       // }
 
-      file.mv("public/cv/" + file.name, function (err) {
-        if (err) {
-          console.log("Couldn't upload");
-          console.log(err);
-        } else {
-          console.log("Saved!");
-        }
-      });
-
+      await file.mv("public/cv/" + file.name);
       const data = await Application.findOne({
         email
       });
@@ -65,13 +57,12 @@ const newApp = async (req, res, next) => {
         });
       } else {
 
-        const batchID = await Applicant.findOne({
-          isActive: true
-        })
-        var batchNumber = batchID.batch
+        // const batchID = await Applicant.findOne({
+        //   isActive: true
+        // })
+        // var batchNumber = batchID.batch
 
         const newEntry = await new Application({
-          batchNumber,
           firstName,
           lastName,
           email,

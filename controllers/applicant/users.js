@@ -48,10 +48,6 @@ const login = async (req, res, next) => {
             email,
             password
         } = req.body;
-        const checkEntry = await Application.findOne({
-            email
-        })
-
         const data = await User.findOne({
             email
         });
@@ -75,15 +71,14 @@ const login = async (req, res, next) => {
                     data.sentEntry = false
                 }
                 const token = await jwt.sign({
-                    isAdmin: data.isAdmin
+                    email: data.email
                 }, process.env.SECRET, {
                     expiresIn: "7h"
                 })
                 return res.status(200).json({
                     message: 'Login successful',
                     token,
-                    data,
-                    checkEntry
+                    data
                 })
             }
         }

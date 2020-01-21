@@ -8,11 +8,6 @@ const auth = require("../middleware/token");
 router.post("/signup", adminCon.adminReg);
 router.post("/login", adminCon.adminLogin);
 
-router.get("/all-test", assCreate.AssessmentDisplay);
-router.post("/test", auth, assCreate.AssessmentEntry);
-router.put("/test/:id", assCreate.AssessmentUpdate);
-router.get("/one-test/:id", assCreate.AssessmentDisplayOne);
-
 router.post("/new", appCreate.ApplicantEntry);
 router.get("/all", auth, appCreate.ApplicantDisplay);
 router.get("/:id", appCreate.ApplicantDisplayOne);

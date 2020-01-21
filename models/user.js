@@ -21,6 +21,10 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    takenTest: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

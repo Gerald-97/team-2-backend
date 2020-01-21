@@ -13,7 +13,11 @@ module.exports = async (req, res, next) => {
             const token = await authorization.slice(7);
             const data = await jwt.verify(token, process.env.SECRET);
             await User.find(data);
-            req.user = data.isAdmin;
+            if (!data.isAdmin) {
+                req.user = data.email
+            } else {
+                req.user = data.isAdmin;
+            }
             next();
         }
     } catch (err) {

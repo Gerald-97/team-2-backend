@@ -12,7 +12,8 @@ var port = 4000;
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
-var adminRouter = require("./routes/adminRoute")
+var adminRouter = require("./routes/adminRoute");
+var testRouter = require("./routes/testRoute")
 
 var app = express();
 mongoose.connect(process.env.DATABASE_URL, {
@@ -35,6 +36,7 @@ app.listen(port, () => {
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/admin", adminRouter)
+app.use("/admin", adminRouter);
+app.use("/tests", testRouter)
 
 module.exports = app;
