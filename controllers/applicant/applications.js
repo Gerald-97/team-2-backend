@@ -90,11 +90,11 @@ const newApp = async (req, res, next) => {
           html: content
         };
 
-        transporter.sendMail(message, function (error, info) {
+        await transporter.sendMail(message, function (error, info) {
           if (error) {
-            console.log(error);
+            return next(error);
           } else {
-            console.log("Email sent: " + info.response);
+            alert("Email sent: " + info.response);
           }
         });
         return res.status(201).json({

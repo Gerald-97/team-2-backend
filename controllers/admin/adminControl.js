@@ -27,7 +27,6 @@ const adminReg = async (req, res, next) => {
                 isAdmin
             });
             await newAdmin.save();
-            console.log(newAdmin);
             return res.status(201).json({
                 message: "Admin created successfully"
             });
