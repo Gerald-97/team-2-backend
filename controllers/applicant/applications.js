@@ -9,8 +9,8 @@ var transporter = nodemailer.createTransport(smtpTransport({
   service: "gmail",
   host: 'smtp.gmail.com',
   auth: {
-    user: "geraldinyiama@gmail.com",
-    password: "sept1997"
+    user: `${process.env.EMAIL}`,
+    password: `${process.env.PASSWORD}`
   }
 }));
 
@@ -51,7 +51,6 @@ const newApp = async (req, res, next) => {
         cgpa,
         file
       });
-
       await newEntry.save();
       const content = `
         <p>Dear ${firstName},</p>
