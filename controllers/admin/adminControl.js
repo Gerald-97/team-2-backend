@@ -73,7 +73,22 @@ const adminLogin = async (req, res, next) => {
     }
 }
 
+const oneAdmin = async (req, res, next) => {
+    try {
+        const id = await req.params.id
+        const data = await Admin.findOne({
+            _id: id
+        })
+        return res.status(201).json({
+            data
+        })
+    } catch (err) {
+        return next(err)
+    }
+}
+
 module.exports = {
     adminReg,
-    adminLogin
+    adminLogin,
+    oneAdmin
 };

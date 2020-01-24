@@ -43,7 +43,7 @@ const ApplicantUpdate = async (req, res) => {
             date,
             Instructions
         } = req.body;
-        if (!req.user) {
+        if (req.user !== true) {
             return res.status(401).json({
                 message: "You are not an Admin"
             });
@@ -75,7 +75,7 @@ const ApplicantUpdate = async (req, res) => {
 
 const ApplicantDelete = async (req, res, next) => {
     try {
-        if (!req.user) {
+        if (req.user !== true) {
             return res.status(401).json({
                 message: "You need to be an Admin"
             });

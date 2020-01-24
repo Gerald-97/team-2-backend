@@ -13,7 +13,7 @@ const AssessmentSchema = new Schema({
         type: {}
     },
     answer: {
-        type: Number,
+        type: Number
     },
     ansQ: {
         type: String

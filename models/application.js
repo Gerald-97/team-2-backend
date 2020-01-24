@@ -15,7 +15,7 @@ const applicationSchema = new Schema({
         require: true
     },
     birthday: {
-        type: Date,
+        type: String,
         require: true
     },
     address: {
@@ -34,7 +34,9 @@ const applicationSchema = new Schema({
         type: Number,
         require: true
     },
-    file: {}, //This is where I intend setting the upload
+    file: {
+
+    },
     createdAt: {
         type: Date,
         default: Date.now

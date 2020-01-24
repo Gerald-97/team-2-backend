@@ -3,16 +3,14 @@ const Schema = mongoose.Schema;
 
 const answerSchema = new Schema({
     answer: {
-        type: {},
-        // required: true
+        type: {}
     },
     score: {
         type: Number,
-        // required: true
+        required: true
     },
     doneTest: {
         type: Boolean,
-        // required: true,
         default: false
     },
     questionId: {

@@ -12,7 +12,6 @@ module.exports = async (req, res, next) => {
         } else {
             const token = await authorization.slice(7);
             const data = await jwt.verify(token, process.env.SECRET);
-            await User.find(data);
             if (!data.isAdmin) {
                 req.user = data.email
             } else {

@@ -25,6 +25,9 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    score: {
+        type: Number
+    },
     createdAt: {
         type: Date,
         default: Date.now

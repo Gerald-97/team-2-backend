@@ -1,6 +1,6 @@
 const Questions = require('../../models/assessment')
 const Answers = require('../../models/submitAns')
-const User = require('../../models/user')
+const Application = require('../../models/application')
 
 const calcAns = async (req, res, next) => {
     try {
@@ -9,61 +9,84 @@ const calcAns = async (req, res, next) => {
             answer
         } = req.body;
         const userEmail = req.user;
-        console.log(questionId)
-        console.log(answer)
-        const userP = await User.findOne({
+        const userP = await Application.findOne({
             email: userEmail
         })
-        console.log(userP)
-        const ansSubmitted = await Answers.findOne({
-            email: userEmail
-        })
-        // if (ansSubmitted) {
-        //     return res.status(401).json({
-        //         message: "You have already submitted"
-        //     })
-        // } else {
+        if (!userP) {
+            return res.status(401).json({
+                message: "Login to the user"
+            })
+        } else {
+            console.log(questionId)
+            console.log(answer)
+            const ansSubmitted = await Answers.findOne({
+                email: userEmail
+            })
+            if (ansSubmitted) {
+                return res.status(401).json({
+                    message: "You have already submitted"
+                })
+            } else {
+                var score = 0;
+                var setQuestions = [];
+                var setAnswers = [];
 
-        var score = 0;
-        var ansQ = [];
-
-        const allQ = await Questions.find()
-
-        for (let id in questionId) {
-            for (let i in allQ) {
-                if (id === i._id) {
-                    console.log(i)
-                    ansQ.push(i.answer)
+                for (i = 0; i < questionId.length; i++) {
+                    var setQs = await Questions.findById({
+                        _id: questionId[i]
+                    })
+                    setQuestions.push(setQs)
                 }
-            }
-        }
-        for (let s = 0; s < answer.length; s++) {
-            for (let a = 0; a < ansQ.length; a++) {
-                if (s === a) {
-                    if (answer[s] === ansQ[a]) {
-                        return score += 1
+                for (let j = 0; j < setQuestions.length; j++) {
+                    var setAns = setQuestions[j].ansQ
+                    setAnswers.push(setAns)
+                }
+                for (let k = 0; k < answer.length; k++) {
+                    for (let l = 0; l < setAnswers.length; l++) {
+                        if (k == l) {
+                            if (answer[k] == setAnswers[l]) {
+                                score += 1
+                            }
+                        } else continue
                     }
                 }
+                const newAns = await new Answers({
+                    score,
+                    doneTest: true,
+                    userEmail,
+                    userProfile: userP,
+                })
+                newAns.save();
+                return res.status(201).json({
+                    message: "Answer Submitted"
+                });
             }
         }
-        const newAns = await new Answers({
-            answer,
-            score,
-            doneTest: true,
-            questionId,
-            userEmail,
-            userProfile: userP
-        })
-        newAns.save();
-        return res.status(201).json({
-            message: "Answer Submitted",
-            newAns,
-            userP
-        });
-        // }
     } catch (err) {
         return next(err)
     }
 }
 
-module.exports = calcAns
+const getScores = async (req, res, next) => {
+    try {
+        const data = await Answers.find()
+        console.log(data)
+        if (req.user !== true) {
+            return res.status(401).json({
+                message: "You are not an Admin"
+            })
+        } else {
+            return res.status(201).json({
+                message: "success",
+                data
+            })
+        }
+    } catch (err) {
+        return next(err)
+    }
+}
+
+module.exports = {
+    calcAns,
+    getScores
+}

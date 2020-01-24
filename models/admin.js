@@ -4,10 +4,12 @@ const Schema = mongoose.Schema;
 const AdminSchema = new Schema({
     //add the required:true
     name: {
-        type: String
+        type: String,
+        require: true
     },
     email: {
-        type: String
+        type: String,
+        require: true
     },
     password: {
         type: String

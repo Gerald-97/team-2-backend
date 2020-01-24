@@ -53,7 +53,7 @@ const login = async (req, res, next) => {
         });
         if (!data) {
             return res.status(401).json({
-                message: 'User does not exist'
+                message: 'Invalid login details'
             })
         } else {
             const match = await bcrypt.compare(password, data.password);
@@ -71,7 +71,8 @@ const login = async (req, res, next) => {
                     data.sentEntry = false
                 }
                 const token = await jwt.sign({
-                    email: data.email
+                    email: data.email,
+                    isAdmin: data.isAdmin
                 }, process.env.SECRET, {
                     expiresIn: "7h"
                 })
@@ -91,15 +92,29 @@ const login = async (req, res, next) => {
 /* GETTING TOTAL REGISTERED USERS */
 const allUsers = async (req, res, next) => {
     try {
-        const data = await User.find({})
+        const data = await User.find()
         return res.status(200).json({
             data
         })
-
     } catch (err) {
         return next(err)
     }
 };
+
+const oneUser = async (req, res, next) => {
+    try {
+        const id = await req.params.id
+        const data = await User.findOne({
+            _id: id
+        })
+        console.log(data)
+        return res.status(201).json({
+            data
+        })
+    } catch (err) {
+        return next(err)
+    }
+}
 
 const deleteUser = (req, res, next) => {
     const id = req.params.id
@@ -122,5 +137,6 @@ module.exports = {
     signup,
     login,
     allUsers,
+    oneUser,
     deleteUser
 };

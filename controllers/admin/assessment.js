@@ -26,7 +26,7 @@ const AssessmentEntry = async (req, res, next) => {
         } = req.body;
         const file = req.files.file;
         const ansQ = options[answer]
-        if (!req.user) {
+        if (req.user !== true) {
             return res.status(401).json({
                 message: "You are not an Admin"
             })
@@ -66,7 +66,7 @@ const AssessmentUpdate = async (req, res) => {
             options
         } = req.body;
         const file = req.file.file;
-        if (!req.user) {
+        if (req.user !== true) {
             return res.status(401).json({
                 message: "You are not an admin"
             });
@@ -94,7 +94,7 @@ const AssessmentUpdate = async (req, res) => {
 
 const AssessmentDelete = async (req, res, next) => {
     try {
-        if (!req.user) {
+        if (req.user !== true) {
             return res.status(401).json({
                 message: "You need to be an admin"
             });
@@ -122,21 +122,26 @@ const AssessmentDelete = async (req, res, next) => {
 const AssessmentDisplay = async (req, res, next) => {
     try {
         const userEmail = req.user;
-        const ansSubmitted = await Answers.findOne({
-            userEmail: userEmail
-        })
-        if (ansSubmitted) {
-            res.status(401).json({
-                message: "You have already submitted"
+        if (userEmail === true) {
+            return res.status(401).json({
+                message: "You are not logged in"
             })
         } else {
-            const data = await Assessment.find();
-            const questionData = await shuffle(data).slice(0, 30)
-
-            return res.status(200).json({
-                message: "Questions",
-                questionData
-            });
+            const ansSubmitted = await Answers.findOne({
+                userEmail: userEmail
+            })
+            if (ansSubmitted) {
+                return res.status(401).json({
+                    message: "You have already submitted"
+                })
+            } else {
+                const data = await Assessment.find();
+                const questionData = await shuffle(data).slice(0, 30)
+                return res.status(200).json({
+                    message: "Questions",
+                    questionData
+                });
+            }
         }
     } catch (err) {
         return next(err);
