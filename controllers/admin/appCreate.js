@@ -17,7 +17,7 @@ const ApplicantEntry = async (req, res, next) => {
             });
         } else {
             await fileapplicant.mv("public/application/" + fileapplicant.name);
-            const newEntry = await new Applicant({
+            const newEntry = new Applicant({
                 batch,
                 link,
                 date,
