@@ -72,6 +72,7 @@ const login = async (req, res, next) => {
                 }
                 const token = await jwt.sign({
                     email: data.email,
+                   
                     isAdmin: data.isAdmin
                 }, process.env.SECRET, {
                     expiresIn: "7h"
