@@ -5,7 +5,9 @@ const userSchema = new Schema({
     firstName: String,
     lastName: String,
     email: {
-        type: String
+        type: String,
+        
+        required:true
     },
     phoneNumber: {
         type: Number
@@ -17,6 +19,8 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     sentEntry: {
         type: Boolean,
         default: false

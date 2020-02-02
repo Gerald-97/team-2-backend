@@ -1,18 +1,15 @@
 const Application = require("../../models/application");
 const User = require("../../models/user");
 var nodemailer = require("nodemailer");
-var smtpTransport = require('nodemailer-smtp-transport');
 const morgan = require("morgan");
-var cloudinary = require("cloudinary").v2;
 
-var transporter = nodemailer.createTransport(smtpTransport({
-  service: "gmail",
-  host: 'smtp.gmail.com',
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
   auth: {
     user: `${process.env.EMAIL}`,
-    password: `${process.env.PASSWORD}`
+    pass: `${process.env.PASSWORD}`
   }
-}));
+});
 
 // New Application Entry
 const newApp = async (req, res, next) => {
@@ -63,30 +60,28 @@ const newApp = async (req, res, next) => {
         <br>
         <p>Enyata Recruitment Team</p>`;
 
-      var message = {
-        from: '"Enyata Software Engineering" <mail@enyata.com>',
+      var mailOptions = {
+        from: '"Enyata Academy" <anitaogechi9@gmail.com>',
         to: `${email}`,
-        subject: "Your application: Software Developer Academy",
+        subject: 'Your application: Software Developer Academy',
         html: content
       };
 
-      await transporter.sendMail(message, function (error, info) {
+      transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
-          return next(error);
+          console.log(error);
         } else {
-          alert("Email sent: " + info.response);
+          console.log('Email sent: ' + info.response);
         }
-      });
+      })
       return res.status(201).json({
-        message: "Thank you for submitting your application, we will get back to you",
-        newEntry
-      });
+        message: 'Thank you for submitting your application, we will get back to you'
+      })
     }
   } catch (err) {
     return next(err);
   }
 };
-
 // Display All Applications
 const totalApp = async (req, res, next) => {
   try {
