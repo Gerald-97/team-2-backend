@@ -28,8 +28,11 @@ const newApp = async (req, res, next) => {
       cgpa
     } = req.body;
     const file = req.files.file;
-
-    await file.mv("public/cv/" + file.name);
+    if (!file) {
+      return res.status(409).json({
+        message: "Please upload a file"
+      })
+    }
     const data = await Application.findOne({
       email
     });
@@ -39,7 +42,7 @@ const newApp = async (req, res, next) => {
         message: `Application for ${email} has been received already`
       });
     } else {
-
+      await file.mv("public/cv/" + file.name);
       const newEntry = await new Application({
         firstName,
         lastName,

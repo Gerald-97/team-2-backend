@@ -50,7 +50,7 @@ const adminLogin = async (req, res, next) => {
                 message: "Invalid email/password"
             });
         } else {
-            var isMatch = bcrypt.compare(password, data.password);
+            var isMatch = await bcrypt.compare(password, data.password);
             if (!isMatch) {
                 return res.status(401).json({
                     message: "Invalid email/password"
