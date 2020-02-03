@@ -6,8 +6,7 @@ const userSchema = new Schema({
     lastName: String,
     email: {
         type: String,
-        
-        required:true
+        required: true
     },
     phoneNumber: {
         type: Number
@@ -35,6 +34,10 @@ const userSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    status: {
+        type: String,
+        default: 'unverified'
     }
 });
 
