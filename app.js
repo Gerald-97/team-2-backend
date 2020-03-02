@@ -12,7 +12,10 @@ var port = 4000;
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
-var adminRouter = require("./routes/adminRoute")
+var adminRouter = require("./routes/adminRoute");
+var testRouter = require("./routes/testRoute");
+var applRouter = require("./routes/appls");
+var adminApp = require("./routes/adminApp");
 
 var app = express();
 mongoose.connect(process.env.DATABASE_URL, {
@@ -29,12 +32,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(fileUpload());
 
-app.listen(port, () => {
-  console.log(`app is listening on port ${port}`);
-});
+app.listen(port);
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/admin", adminRouter)
+app.use("/admin", adminRouter);
+app.use("/tests", testRouter);
+app.use("/appl", applRouter);
+app.use("/create", adminApp)
 
 module.exports = app;

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../models/user');
+const Application = require("../../models/application");
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config();
 
@@ -42,17 +43,17 @@ const signup = async (req, res, next) => {
 
 /* A  REGISTERED USER CAN LOGIN AND GET AN AUTHORIZATION TOKEN */
 const login = async (req, res, next) => {
-    const {
-        email,
-        password
-    } = req.body;
     try {
+        const {
+            email,
+            password
+        } = req.body;
         const data = await User.findOne({
             email
         });
         if (!data) {
             return res.status(401).json({
-                message: 'User does not exist'
+                message: 'Invalid login details'
             })
         } else {
             const match = await bcrypt.compare(password, data.password);
@@ -61,7 +62,17 @@ const login = async (req, res, next) => {
                     message: 'Invalid login details'
                 })
             } else {
+                const checkEntry = await Application.findOne({
+                    email
+                })
+                if (checkEntry) {
+                    data.sentEntry = true
+                } else {
+                    data.sentEntry = false
+                }
                 const token = await jwt.sign({
+                    email: data.email,
+                   
                     isAdmin: data.isAdmin
                 }, process.env.SECRET, {
                     expiresIn: "7h"
@@ -82,15 +93,29 @@ const login = async (req, res, next) => {
 /* GETTING TOTAL REGISTERED USERS */
 const allUsers = async (req, res, next) => {
     try {
-        const data = await User.find({})
+        const data = await User.find()
         return res.status(200).json({
             data
         })
-
     } catch (err) {
         return next(err)
     }
 };
+
+const oneUser = async (req, res, next) => {
+    try {
+        const id = await req.params.id
+        const data = await User.findOne({
+            _id: id
+        })
+        console.log(data)
+        return res.status(201).json({
+            data
+        })
+    } catch (err) {
+        return next(err)
+    }
+}
 
 const deleteUser = (req, res, next) => {
     const id = req.params.id
@@ -113,5 +138,6 @@ module.exports = {
     signup,
     login,
     allUsers,
+    oneUser,
     deleteUser
 };

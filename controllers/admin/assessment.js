@@ -1,65 +1,81 @@
 const Assessment = require("../../models/assessment");
+const Answers = require('../../models/submitAns')
 const dotenv = require("dotenv").config();
 
-const AssessmentEntry = async (req, res, next) => {
-    const {
-        question,
-        optionA,
-        optionB,
-        optionC,
-        optionD
-    } = req.body;
-    const fileName = req.files.fileName;
+function shuffle(array) {
+    var m = array.length,
+        t,
+        i;
 
-    fileName.mv("public/questions/" + fileName.name, function (err) {
-        if (err) {
-            console.log("Couldn't upload");
-            console.log(err);
-        } else {
-            console.log("Saved!");
-        }
-    });
-    console.log(fileName);
+    while (m) {
+        i = Math.floor(Math.random() * m--);
+
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+    }
+    return array;
+}
+
+const AssessmentEntry = async (req, res, next) => {
     try {
-        const newEntry = new Assessment({
-            fileName,
+        const {
             question,
-            optionA,
-            optionB,
-            optionC,
-            optionD
-        });
-        await newEntry.save();
-        return res.status(201).json({
-            message: "Assessment Created"
-        });
+            answer,
+            options
+        } = req.body;
+        const file = req.files.file;
+        const ansQ = options[answer]
+        if (req.user !== true) {
+            return res.status(401).json({
+                message: "You are not an Admin"
+            })
+        } else {
+            const data = await Assessment.findOne({
+                question
+            });
+            if (data) {
+                return res.status(401).json({
+                    message: 'Question already in the database'
+                })
+            } else {
+                await file.mv("public/questions/" + file.name);
+                const newEntry = new Assessment({
+                    question,
+                    answer,
+                    options,
+                    ansQ
+                });
+                await newEntry.save();
+                return res.status(201).json({
+                    message: "Assessment Created",
+                    newEntry
+                });
+            }
+        }
     } catch (err) {
         return next(err);
     }
 };
 
 const AssessmentUpdate = async (req, res) => {
-    const {
-        question,
-        optionA,
-        optionB,
-        optionC,
-        optionD
-    } = req.body;
-    const fileName = req.file.fileName;
     try {
+        const {
+            question,
+            answer,
+            options
+        } = req.body;
+        const file = req.file.file;
         if (req.user !== true) {
             return res.status(401).json({
                 message: "You are not an admin"
             });
         } else {
             const data = await Assessment.findByIdAndUpdate(req.params.id, {
-                fileName,
+                file,
                 question,
-                optionA,
-                optionB,
-                optionC,
-                optionD
+                answer,
+                options
             });
             if (!data) {
                 return res.status(401).json({
@@ -67,47 +83,66 @@ const AssessmentUpdate = async (req, res) => {
                 });
             } else {
                 return res.status(201).json({
-                    message: "Applcation Updated"
+                    message: "Assessment Updated"
                 });
             }
         }
-    } catch {
+    } catch (err) {
         return next(err);
     }
 };
 
-// const AssessmentDelete = async (req, res, next) => {
-//   try{
-//   if (!req.user) {
-//     return res.status(401).json({
-//       message: "You need to be an admin"
-//     });
-//   } else {
-//     const id = req.params.id;
-//     const data = await Assessment.findByIdAndDelete({ _id: id });
-//       if (err) next(err);
-//       if (!data) {
-//      return res.status(401).json({
-//    message: "No Assessment for this id"});
-//       } else {
-//         res.status(201).json({
-//           message: "Assessment deleted successfully"
-//         });
-//       }
+const AssessmentDelete = async (req, res, next) => {
+    try {
+        if (req.user !== true) {
+            return res.status(401).json({
+                message: "You need to be an admin"
+            });
+        } else {
+            const id = req.params.id;
+            const data = await Assessment.findByIdAndDelete({
+                _id: id
+            });
+            if (!data) {
+                return res.status(401).json({
+                    message: "No Assessment for this id"
+                });
+            } else {
+                res.status(201).json({
+                    message: "Assessment deleted successfully"
+                });
+            }
 
-//   }
-// }catch {
-//   return next(err)
-// }
-// }
+        }
+    } catch (err) {
+        return next(err)
+    }
+}
 
 const AssessmentDisplay = async (req, res, next) => {
     try {
-        const data = await Assessment.find({});
-        return res.status(200).json({
-            message: "Questions",
-            data
-        });
+        const userEmail = req.user;
+        if (userEmail === true) {
+            return res.status(401).json({
+                message: "You are not logged in"
+            })
+        } else {
+            const ansSubmitted = await Answers.findOne({
+                userEmail: userEmail
+            })
+            if (ansSubmitted) {
+                return res.status(401).json({
+                    message: "You have already submitted"
+                })
+            } else {
+                const data = await Assessment.find();
+                const questionData = await shuffle(data).slice(0, 30)
+                return res.status(200).json({
+                    message: "Questions",
+                    questionData
+                });
+            }
+        }
     } catch (err) {
         return next(err);
     }
@@ -132,5 +167,6 @@ module.exports = {
     AssessmentEntry,
     AssessmentUpdate,
     AssessmentDisplay,
-    AssessmentDisplayOne
+    AssessmentDisplayOne,
+    AssessmentDelete
 };

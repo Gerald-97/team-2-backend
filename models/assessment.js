@@ -2,29 +2,27 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const AssessmentSchema = new Schema({
-    fileName: {
+    file: {
         data: Buffer,
         contentType: String
     },
     question: {
         type: String
     },
-    optionA: {
+    options: {
+        type: {}
+    },
+    answer: {
+        type: Number
+    },
+    ansQ: {
         type: String
     },
-    optionB: {
-        type: String
-    },
-    optionC: {
-        type: String
-    },
-    optionD: {
-        type: String
-    },
-    created_at: {
+    createdAt: {
         type: Date,
         default: Date.now
     }
+
 });
 
 module.exports = mongoose.model("Assessment", AssessmentSchema);

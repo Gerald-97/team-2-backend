@@ -14,7 +14,7 @@ const adminReg = async (req, res, next) => {
             email
         });
         if (data) {
-            return res.status(400).json({
+            return res.status(401).json({
                 message: "Admin has been registered already"
             });
         } else {
@@ -27,7 +27,6 @@ const adminReg = async (req, res, next) => {
                 isAdmin
             });
             await newAdmin.save();
-            console.log(newAdmin);
             return res.status(201).json({
                 message: "Admin created successfully"
             });
@@ -44,27 +43,30 @@ const adminLogin = async (req, res, next) => {
             password
         } = req.body;
         var data = await Admin.findOne({
-            email
+            email,
+            
         });
         if (!data) {
             return res.status(401).json({
                 message: "Invalid email/password"
             });
         } else {
-            var isMatch = bcrypt.compare(password, data.password);
+            var isMatch = await bcrypt.compare(password, data.password);
             if (!isMatch) {
                 return res.status(401).json({
                     message: "Invalid email/password"
                 })
             } else {
                 const token = jwt.sign({
-                    isAdmin: data.isAdmin
+                    isAdmin: data.isAdmin,
+                    password:data.password,
                 }, process.env.SECRET, {
-                    expiresIn: '12h'
+                    expiresIn: '1h'
                 });
                 return res.status(200).json({
                     message: "Logged in successfully",
-                    token
+                    token,
+                    data
                 });
             }
         }
@@ -73,7 +75,22 @@ const adminLogin = async (req, res, next) => {
     }
 }
 
+const oneAdmin = async (req, res, next) => {
+    try {
+        const id = await req.params.id
+        const data = await Admin.findOne({
+            _id: id
+        })
+        return res.status(201).json({
+            data
+        })
+    } catch (err) {
+        return next(err)
+    }
+}
+
 module.exports = {
     adminReg,
-    adminLogin
+    adminLogin,
+    oneAdmin
 };

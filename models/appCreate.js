@@ -3,9 +3,7 @@ const Schema = mongoose.Schema;
 
 const AppSchema = new Schema({
     //add the required:true
-    fileapplicant: {
-        type: String
-    },
+    fileapplicant: {},
     batch: {
         type: Number
     },
@@ -21,6 +19,10 @@ const AppSchema = new Schema({
     created_at: {
         type: Date,
         default: Date.now
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 });
 

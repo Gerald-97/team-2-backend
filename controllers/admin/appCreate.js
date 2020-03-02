@@ -11,26 +11,25 @@ const ApplicantEntry = async (req, res, next) => {
         } = req.body;
         const fileapplicant = req.files.fileapplicant;
 
-        fileapplicant.mv("public/application/" + fileapplicant.name, function (err) {
-            if (err) {
-                console.log("Couldn't upload");
-                console.log(err);
-            } else {
-                console.log("Saved!");
-            }
-        });
-        const newEntry = await new Applicant({
-            fileapplicant,
-            batch,
-            link,
-            date,
-            instructions,
-            fileapplicant
-        });
-        await newEntry.save();
-        return res.status(201).json({
-            message: "Application Created"
-        });
+        if (date < Date.now()) {
+            return res.status(401).json({
+                message: "The date is passed"
+            });
+        } else {
+            await fileapplicant.mv("public/application/" + fileapplicant.name);
+            const newEntry = new Applicant({
+                batch,
+                link,
+                date,
+                instructions,
+                fileapplicant
+            });
+            await newEntry.save();
+            return res.status(201).json({
+                message: "Application Created",
+                newEntry
+            });
+        }
     } catch (err) {
         return next(err);
     }
@@ -46,7 +45,7 @@ const ApplicantUpdate = async (req, res) => {
         } = req.body;
         if (req.user !== true) {
             return res.status(401).json({
-                message: "You are not an admin"
+                message: "You are not an Admin"
             });
         } else {
             id = req.params.id;
@@ -76,9 +75,9 @@ const ApplicantUpdate = async (req, res) => {
 
 const ApplicantDelete = async (req, res, next) => {
     try {
-        if (!req.user) {
+        if (req.user !== true) {
             return res.status(401).json({
-                message: "You need to be an admin"
+                message: "You need to be an Admin"
             });
         } else {
             const id = req.params.id;
@@ -103,7 +102,7 @@ const ApplicantDelete = async (req, res, next) => {
 
 const ApplicantDisplay = async (req, res, next) => {
     try {
-        const data = await Applicant.find({}).sort({
+        const data = await Applicant.find().sort({
             createdAt: -1
         });
         return res.status(200).json({

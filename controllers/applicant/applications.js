@@ -2,13 +2,12 @@ const Application = require("../../models/application");
 const User = require("../../models/user");
 var nodemailer = require("nodemailer");
 const morgan = require("morgan");
-var cloudinary = require("cloudinary").v2;
 
 var transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
     user: `${process.env.EMAIL}`,
-    password: `${process.env.PASSWORD}`
+    pass: `${process.env.PASSWORD}`
   }
 });
 
@@ -26,26 +25,12 @@ const newApp = async (req, res, next) => {
       cgpa
     } = req.body;
     const file = req.files.file;
-
-    // const filetypes = /pdf|doc|docx/;
-    // const extname = filetypes.test(upload.extname(upload.originalname).toLowerCase());
-    // const mimetype = filetypes.test(upload.mimetype);
-    // if (extname && mimetype) {
-    //   return cb(null, true);
-    // } else {
-    //   cb('Error: Put in the required format')
-    // }
-
-    file.mv("public/cv/" + file.name, function (err) {
-      if (err) {
-        console.log("Couldn't upload");
-        console.log(err);
-      } else {
-        console.log("Saved!");
-      }
-    });
-
-    const data = await User.findOne({
+    if (!file) {
+      return res.status(409).json({
+        message: "Please upload a file"
+      })
+    }
+    const data = await Application.findOne({
       email
     });
 
@@ -54,6 +39,7 @@ const newApp = async (req, res, next) => {
         message: `Application for ${email} has been received already`
       });
     } else {
+      await file.mv("public/cv/" + file.name);
       const newEntry = await new Application({
         firstName,
         lastName,
@@ -65,7 +51,6 @@ const newApp = async (req, res, next) => {
         cgpa,
         file
       });
-
       await newEntry.save();
       const content = `
         <p>Dear ${firstName},</p>
@@ -75,37 +60,41 @@ const newApp = async (req, res, next) => {
         <br>
         <p>Enyata Recruitment Team</p>`;
 
-      var message = {
-        from: '"Enyata Software Engineering" <anitaogechi9@gmail.com>',
+      var mailOptions = {
+        from: '"Enyata Academy" <anitaogechi9@gmail.com>',
         to: `${email}`,
-        subject: "Your application: Software Developer Academy",
+        subject: 'Your application: Software Developer Academy',
         html: content
       };
 
-      transporter.sendMail(message, function (error, info) {
+      transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
           console.log(error);
         } else {
-          console.log("Email sent: " + info.response);
+          console.log('Email sent: ' + info.response);
         }
-      });
+      })
       return res.status(201).json({
-        message: "Thank you for submitting your application, we will get back to you",
-        newEntry
-      });
+        message: 'Thank you for submitting your application, we will get back to you'
+      })
     }
   } catch (err) {
     return next(err);
   }
 };
-
 // Display All Applications
 const totalApp = async (req, res, next) => {
   try {
-    const data = await Application.find({});
-    res.status(200).json({
-      data
-    });
+    if (req.user !== true) {
+      return res.status(401).json({
+        message: "You are not an Admin"
+      })
+    } else {
+      const data = await Application.find();
+      return res.status(200).json({
+        data
+      });
+    }
   } catch (err) {
     return next(err);
   }
